@@ -32,17 +32,14 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Properties;
 
-
 public class MainActivity extends AppCompatActivity implements LocationListener {
 
-    private static final String API_KEY = "";
+    private static final String API_KEY = "b69846c8fdb41a2c17a4ca89eb0e2e52";
     EditText city;
     TextView setWeather;
     TextView cityText; // Prikazuje za koji grad se prikazuje temperatura
     LocationManager locationManager;
     private static final int REQUEST_LOCATION_PERMISSION = 1;
-
-
 
     public class DownloadWeather extends AsyncTask<String, Void, String> {
         @Override
@@ -69,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                     httpURLConnection.disconnect();
             }
         }
+
         private String getApiKeyFromEnv() {
             Properties properties = new Properties();
             try {
@@ -81,7 +79,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             }
             return null;
         }
-
 
         @Override
         protected void onPostExecute(String s) {
@@ -109,7 +106,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                     String Humidity = String.format("%.1f", jsontemp.getDouble("humidity"));
                     setWeather.setText(first + ": " + second + "\n\r" + "\nTemperatura: " + formattedTemperature + "°C" + "\n\nOsjet: " +
                             formattedFellsLike + "°C"  + "\n\nDnevna: " + Temp_max + "°C" + "\n\nNoćna: " + temp_min + "°C" + "\n\nTlak: " + Pressure
-                            + " mBar" + "\n\nVlažnost: " + Humidity + "%" );
+                            + " mBar" + "\n\nVlažnost: " + Humidity + "%");
+
+                    // Dodajte kod za dobivanje vremenske prognoze za 7 dana ovdje
+                    String city = json.getString("name");
+                    get7DayWeather(city);
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -120,18 +122,18 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     public void getWeather(View view) {
         setWeather.setText("");
         if (city.getText().toString().isEmpty()) {
-            // Check if location permission is already granted
+            // Provjeri je li dozvola za lokaciju već odobrena
             if (checkLocationPermission()) {
-                // Get the current location
+                // Dohvati trenutnu lokaciju
                 getLocation();
             } else {
-                // Request location permission if not granted
+                // Zatraži dozvolu za lokaciju ako nije odobrena
                 requestLocationPermission();
             }
         } else {
-            // If a location is entered, get the weather data for that location
+            // Ako je unesena lokacija, dohvatite podatke o vremenu za tu lokaciju
             if (checkLocationPermission()) {
-                // Clear the location updates to prevent using the current location
+                // Obriši ažuriranja lokacije kako ne biste koristili trenutnu lokaciju
                 locationManager.removeUpdates(this);
             }
             String cityName = city.getText().toString();
@@ -140,6 +142,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             InputMethodManager mr = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
             mr.hideSoftInputFromWindow(setWeather.getWindowToken(), 0);
         }
+    }
+
+    private void get7DayWeather(String city) {
+        Log.d("Main Activity", city);
+        String sevenDayUrl = "https://api.openweathermap.org/data/2.5/forecast?q=" + city + "&lang=hr&appid=" + API_KEY;
+        DownloadWeather task = new DownloadWeather();
+        task.execute(sevenDayUrl);
     }
 
     private void getLocation() {
@@ -179,7 +188,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         double longitude = location.getLongitude();
 
         // Dohvati vremensku prognozu na temelju trenutne lokacije
-        String weatherUrl = "https://api.openweathermap.org/data/2.5/weather?lat=" + latitude + "&lon=" + longitude + "&lang=hr&appid=9c776c8dd31766149946e35c4896cd2d";
+        String weatherUrl = "https://api.openweathermap.org/data/2.5/weather?lat=" + latitude + "&lon=" + longitude + "&lang=hr&appid=" + API_KEY;
         DownloadWeather task = new DownloadWeather();
         task.execute(weatherUrl);
     }
@@ -216,19 +225,15 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     }
 
     private boolean checkLocationPermission() {
-        int permissionState = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION);
+        int permissionState = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
         return permissionState == PackageManager.PERMISSION_GRANTED;
     }
 
     private void requestLocationPermission() {
-        if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                Manifest.permission.ACCESS_FINE_LOCATION)) {
-            Toast.makeText(this, "Permission needed to access location", Toast.LENGTH_SHORT).show();
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+            Toast.makeText(this, "Potrebna je dozvola za pristup lokaciji", Toast.LENGTH_SHORT).show();
         }
-        ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                REQUEST_LOCATION_PERMISSION);
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION_PERMISSION);
     }
 
     @Override
@@ -238,8 +243,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 startLocationUpdates();
             } else {
-                Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Dozvola odbijena", Toast.LENGTH_SHORT).show();
             }
         }
     }
 }
+
