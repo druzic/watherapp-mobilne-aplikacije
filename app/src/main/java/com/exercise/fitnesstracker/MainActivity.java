@@ -21,7 +21,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -38,6 +37,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     EditText city;
     TextView setWeather;
     TextView cityText; // Prikazuje za koji grad se prikazuje temperatura
+    TextView setTemp;
+    TextView FindCity;
+    TextView feelsLike;
+    TextView dayTemp;
+    TextView nightTemp;
+    TextView pressureCur;
+    TextView humidityCur;
     LocationManager locationManager;
     private static final int REQUEST_LOCATION_PERMISSION = 1;
 
@@ -86,16 +92,16 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             if (s.equals("Failed")) {
                 setWeather.setText("Failed To find!!");
             } else {
-                String first = "";
-                String second = "";
+                String cityName = "";
+                String clouds = "";
                 try {
                     JSONObject json = new JSONObject(s);
                     JSONArray arr = new JSONArray(json.getString("weather"));
                     JSONObject jsontemp = json.getJSONObject("main");
                     for (int i = 0; i < arr.length(); i++) {
                         JSONObject jsonPart = arr.getJSONObject(i);
-                        first += jsonPart.getString("main");
-                        second += jsonPart.getString("description");
+                        cityName += json.getString("name");
+                        clouds += jsonPart.getString("description");
                     }
                     Double temp = jsontemp.getDouble("temp") - 273.15;
                     String formattedTemperature = String.format("%.1f", temp);
@@ -104,9 +110,15 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                     String temp_min = String.format("%.1f", jsontemp.getDouble("temp_min") - 273.15);
                     String Pressure = String.format("%.1f", jsontemp.getDouble("pressure"));
                     String Humidity = String.format("%.1f", jsontemp.getDouble("humidity"));
-                    setWeather.setText(first + ": " + second + "\n\r" + "\nTemperatura: " + formattedTemperature + "°C" + "\n\nOsjet: " +
-                            formattedFellsLike + "°C"  + "\n\nDnevna: " + Temp_max + "°C" + "\n\nNoćna: " + temp_min + "°C" + "\n\nTlak: " + Pressure
-                            + " mBar" + "\n\nVlažnost: " + Humidity + "%");
+                    setTemp.setText("Temp: " + formattedTemperature + "°C");
+                    FindCity.setText("City: " + cityName );
+                    feelsLike.setText("Osjet: " + formattedFellsLike + "°C");
+                    dayTemp.setText("Dnevna: " + Temp_max + "°C");
+                    nightTemp.setText("Noćna: " + temp_min + "°C");
+                    pressureCur.setText("Tlak: " + Pressure + " mBar");
+                    humidityCur.setText("Vlažnost: " + Humidity + "%");
+
+
 
                     // Dodajte kod za dobivanje vremenske prognoze za 7 dana ovdje
                     String city = json.getString("name");
@@ -173,6 +185,14 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         city = findViewById(R.id.cityEditText);
         setWeather = findViewById(R.id.weatherTextView);
         cityText = findViewById(R.id.cityTextView);
+        setTemp = findViewById(R.id.tempText);
+        FindCity = findViewById(R.id.FindCity);
+        feelsLike = findViewById(R.id.feelsLike);
+        dayTemp = findViewById(R.id.dayTemp);
+        nightTemp = findViewById(R.id.nightTemp);;
+        pressureCur = findViewById(R.id.pressureCur);
+        humidityCur = findViewById(R.id.humidityCur);
+
 
         // Provjera dozvole za pristup lokaciji
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
